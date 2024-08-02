@@ -1,51 +1,75 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function AddressSearch(){
-    const [dataAttrsNames, setDataAttrsNames] = useState([]);
-    const [encryptionKey, setEncryptionKey] = useState('');
+// XOR cipher encryption
+const encrypt = (str, key) => {
+    return btoa(str.split('').map((char, i) => {
+        return String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length));
+    }).join(''));
+};
+
+// XOR cipher decryption
+const decrypt = (str, key) => {
+    return atob(str).split('').map((char, i) => {
+        return String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length));
+    }).join('');
+};
+
+const MyComponent = () => {
+    const [encryptedAttributes, setEncryptedAttributes] = useState({});
+    const secretKey = 'qwqwt5656';
 
     useEffect(() => {
-        const element = document.getElementById('root');
-        setEncryptionKey(document.getElementById('root').dataset.googleMapsApiKey);
+        const element = document.getElementById('root1');
         if (element) {
-            const attrs = element.firstChild.attributes;
-            const dataAttrsNames  = [];
+            const attrs = element.attributes;
+            const encryptedAttrs = {};
+            const DataAttrs = {};
 
-            
-            for (let i = 0; i < attrs.length; i++) {    
+            // Encrypt data attributes
+            for (let i = 0; i < attrs.length; i++) {
                 const attr = attrs[i];
                 if (attr.name.startsWith('data-')) {
-                    dataAttrsNames.push(attr.name);
+                    DataAttrs[attr.name] = attr.value;
+                    encryptedAttrs[attr.name] = encrypt(attr.value, secretKey);
                 }
             }
-            console.log(dataAttrsNames);
-            setDataAttrsNames(dataAttrsNames);
-        }
+            console.log(DataAttrs)
+            // Set encrypted attributes to state
+            setEncryptedAttributes(encryptedAttrs);
 
-        encryptAllDataAttributes(element, encryptionKey);
-    }, []); 
-
-    function encryptAllDataAttributes(element, key) {
-        //const attributes = element;
-      
-        for (let i = 0; i < dataAttrsNames.length; i++) {
-            const attr = dataAttrsNames[i];
-            //if (attr.startsWith('data-')) {
-                const value = element.getAttribute(attr);
-                const encryptedValue = encodedValue(value, key);
-                element.setAttribute(attr, btoa(encryptedValue)); // Encode to base64 to ensure safe storage
-            //}
+            //const element = divRef.current;
+        //if (element) {
+            // Iterate over the object's entries and set data attributes
+            Object.entries(encryptedAttrs).forEach(([key, value]) => {
+                element.setAttribute(`${key}`, value);
+            });
+        //}
         }
-      }
+    }, []);
 
-      function encodedValue(data, key) {
-        let result = '';
-        for (let i = 0; i < data.length; i++) {
-            result += String.fromCharCode(data.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-        }
-        return result;
-      }
-    return <>
-    <div>this is the AddressSearch component</div>
-    </>
-}
+    // const decryptAttributes = () => {
+    //     const decryptedAttrs = {};
+    //     for (let key in encryptedAttributes) {
+    //         decryptedAttrs[key] = decrypt(encryptedAttributes[key], secretKey);
+    //     }
+    //     return decryptedAttrs;
+    // };
+
+    return (
+        <div>
+            <div
+                id="myDiv"
+                data-secret="12345"
+                data-info="Hello World"
+                data-other="Other Data"
+            >
+                Content goes here...
+            </div>
+            
+            
+        
+        </div>
+    );
+};
+
+export default MyComponent;
